@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cursor Rain Effect Demo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 50px 20px;
+        }
+        
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        p {
+            font-size: 1.2em;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .demo-area {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 40px;
+            margin: 30px 0;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .controls {
+            margin-top: 30px;
+        }
+        
+        button {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 12px 24px;
+            margin: 0 10px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        
+        .info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            max-width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <strong>提示：</strong>移动鼠标来看雨点效果！<br>
+        使用下方按钮控制效果开关。
+    </div>
+    
+    <div class="container">
+        <h1>🌧️ Cursor Rain Effect</h1>
+        <p>这是一个跟随光标的雨点效果演示。移动你的鼠标，享受美丽的雨滴动画！</p>
+        
+        <div class="demo-area">
+            <h2>演示区域</h2>
+            <p>在这个区域移动鼠标，观察雨点效果。效果使用 GSAP 优化，性能流畅。</p>
+            <p>支持自定义颜色、大小、数量等参数，完美兼容 VitePress 等现代前端框架。</p>
+        </div>
+        
+        <div class="controls">
+            <button onclick="toggleRain()">暂停/恢复 雨点</button>
+            <button onclick="changeColor()">更换颜色</button>
+            <button onclick="changeIntensity()">调整强度</button>
+        </div>
+    </div>
+
+    <!-- GSAP CDN for demo -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    
+    <!-- Our rain effect (simulated for demo) -->
+    <script>
+        // 模拟我们的库功能用于演示
+        class DemoRainEffect {
+            constructor(options = {}) {
+                this.options = {
+                    maxDrops: options.maxDrops || 30,
+                    dropSize: options.dropSize || [3, 8],
+                    color: options.color || 'rgba(173, 216, 230, 0.8)',
+                    duration: options.duration || [0.8, 1.5],
+                    enabled: true,
+                    ...options
+                };
+                
+                this.drops = [];
+                this.container = null;
+                this.animationPool = [];
+                this.isEnabled = true;
+                
+                this.init();
+            }
+            
+            init() {
+                this.createContainer();
+                this.preCreateDrops();
+                this.setupEventListeners();
+            }
+            
+            createContainer() {
+                this.container = document.createElement('div');
+                this.container.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100vw;
+                    height: 100vh;
+                    pointer-events: none;
+                    z-index: 9999;
+                    overflow: hidden;
+                `;
+                document.body.appendChild(this.container);
+            }
+            
+            preCreateDrops() {
+                for (let i = 0; i < this.options.maxDrops; i++) {
+                    const drop = document.createElement('div');
+                    drop.style.cssText = `
+                        position: absolute;
+                        background: ${this.options.color};
+                        border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+                        pointer-events: none;
+                        opacity: 0;
+                    `;
+                    this.animationPool.push(drop);
+                    this.container.appendChild(drop);
+                }
+            }
+            
+            setupEventListeners() {
+                this.mouseMoveHandler = this.throttle((e) => {
+                    if (this.isEnabled) {
+                        this.createRainAtPosition(e.clientX, e.clientY);
+                    }
+                }, 16);
+                
+                document.addEventListener('mousemove', this.mouseMoveHandler);
+            }
+            
+            createRainAtPosition(x, y) {
+                const availableDrop = this.animationPool.find(drop => 
+                    gsap.getTweensOf(drop).length === 0
+                );
+                
+                if (!availableDrop) return;
+                
+                const size = this.randomBetween(this.options.dropSize[0], this.options.dropSize[1]);
+                const duration = this.randomBetween(this.options.duration[0], this.options.duration[1]);
+                const offsetX = this.randomBetween(-20, 20);
+                const offsetY = this.randomBetween(-10, 10);
+                
+                gsap.set(availableDrop, {
+                    x: x + offsetX - size / 2,
+                    y: y + offsetY - size / 2,
+                    width: size,
+                    height: size * 1.5,
+                    opacity: 0,
+                    scaleY: 0.1,
+                    rotation: this.randomBetween(-15, 15)
+                });
+                
+                const tl = gsap.timeline();
+                tl.to(availableDrop, {
+                    opacity: 1,
+                    scaleY: 1,
+                    duration: 0.1,
+                    ease: 'power2.out'
+                })
+                .to(availableDrop, {
+                    y: `+=${window.innerHeight - y + 100}`,
+                    scaleY: 1.5,
+                    opacity: 0.3,
+                    duration: duration,
+                    ease: 'power1.in'
+                }, 0.05)
+                .to(availableDrop, {
+                    opacity: 0,
+                    duration: 0.2,
+                    ease: 'power2.out'
+                }, '-=0.3');
+            }
+            
+            enable() {
+                this.isEnabled = true;
+            }
+            
+            disable() {
+                this.isEnabled = false;
+            }
+            
+            updateOptions(newOptions) {
+                this.options = { ...this.options, ...newOptions };
+                
+                // Update existing drops color
+                this.animationPool.forEach(drop => {
+                    drop.style.background = this.options.color;
+                });
+            }
+            
+            randomBetween(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+            
+            throttle(func, delay) {
+                let timeoutId;
+                let lastExecTime = 0;
+                
+                return (...args) => {
+                    const currentTime = Date.now();
+                    
+                    if (currentTime - lastExecTime > delay) {
+                        func(...args);
+                        lastExecTime = currentTime;
+                    } else {
+                        clearTimeout(timeoutId);
+                        timeoutId = setTimeout(() => {
+                            func(...args);
+                            lastExecTime = Date.now();
+                        }, delay - (currentTime - lastExecTime));
+                    }
+                };
+            }
+        }
+        
+        // 初始化雨点效果
+        let rainEffect = new DemoRainEffect();
+        
+        // 控制函数
+        let isEnabled = true;
+        const colors = [
+            'rgba(173, 216, 230, 0.8)',
+            'rgba(255, 182, 193, 0.8)',
+            'rgba(144, 238, 144, 0.8)',
+            'rgba(255, 218, 185, 0.8)',
+            'rgba(221, 160, 221, 0.8)'
+        ];
+        let colorIndex = 0;
+        let intensityLevel = 0;
+        const intensities = [
+            { maxDrops: 30, dropSize: [3, 8] },
+            { maxDrops: 15, dropSize: [2, 6] },
+            { maxDrops: 50, dropSize: [4, 10] }
+        ];
+        
+        function toggleRain() {
+            isEnabled = !isEnabled;
+            if (isEnabled) {
+                rainEffect.enable();
+            } else {
+                rainEffect.disable();
+            }
+        }
+        
+        function changeColor() {
+            colorIndex = (colorIndex + 1) % colors.length;
+            rainEffect.updateOptions({ color: colors[colorIndex] });
+        }
+        
+        function changeIntensity() {
+            intensityLevel = (intensityLevel + 1) % intensities.length;
+            const newIntensity = intensities[intensityLevel];
+            rainEffect.updateOptions(newIntensity);
+        }
+    </script>
+</body>
+</html>
