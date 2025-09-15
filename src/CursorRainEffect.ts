@@ -104,7 +104,7 @@ export class CursorRainEffect implements ICursorRainEffect {
     drop.style.cssText = `
       position: absolute;
       background: ${this.options.color};
-      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      border-radius: 50% 50% 50% 50% / 90% 90% 10% 10%;
       pointer-events: none;
       opacity: 0;
       transform-origin: center bottom;
@@ -172,40 +172,42 @@ export class CursorRainEffect implements ICursorRainEffect {
 
     // Set initial position and size
     gsap.set(dropElement, {
-      x: finalX - size / 2,
+      x: finalX - size / 4, // 调整X偏移，因为宽度变小了
       y: finalY - size / 2,
-      width: size,
-      height: size * 1.5, // Make drops slightly elongated
+      width: size * 0.3, // 宽度减小到原来的30%，让雨滴更细
+      height: size * 4, // 高度增加到4倍，让雨滴更长
       opacity: 0,
       scaleY: 0.1,
       rotation: this.randomBetween(-15, 15)
     });
 
-    // Animate the raindrop
+    // Animate the raindrop - continuous fall with gradual rotation change
+    const initialRotation = this.randomBetween(-15, 15); // 初始随机角度
+    const fallDistance = window.innerHeight - finalY + 100;
+    
     const tl = gsap.timeline({
       onComplete: () => {
         this.returnDropToPool(drop);
       }
     });
 
+    // 快速出现
     tl.to(dropElement, {
       opacity: 1,
       scaleY: 1,
       duration: 0.1,
       ease: 'power2.out'
     })
+    // 连续下落：一次性完成整个下落过程，同时角度逐渐变垂直
     .to(dropElement, {
-      y: `+=${window.innerHeight - finalY + 100}`,
-      scaleY: 1.5,
-      opacity: 0.3,
+      y: `+=${fallDistance}`, // 一次性完成所有下落距离
+      x: `+=${initialRotation * 0.3}`, // 轻微的水平漂移
+      scaleY: 1.5, // 逐渐拉长
+      opacity: 0.3, // 逐渐变透明
+      rotation: 0, // 角度从初始角度平滑变为垂直
       duration: duration,
-      ease: 'power1.in'
-    }, 0.05)
-    .to(dropElement, {
-      opacity: 0,
-      duration: 0.2,
-      ease: 'power2.out'
-    }, '-=0.3');
+      ease: 'power1.in' // 重力加速效果
+    }, 0.05);
   }
 
   private getAvailableDrop(): HTMLElement | null {
