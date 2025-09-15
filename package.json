@@ -1,14 +1,15 @@
 {
-  "name": "@your-username/cursor-rain-effect",
+  "name": "cursor-rain-effect",
   "version": "1.0.0",
-  "description": "A beautiful rain effect that follows cursor movement, optimized with GSAP and compatible with VitePress",
+  "description": "A beautiful rain effect that follows cursor movement with realistic physics. Features slim raindrops that gradually rotate from random angles to vertical during fall, optimized with GSAP and compatible with VitePress.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "module": "dist/index.esm.js",
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "build": "rollup -c",
@@ -23,9 +24,13 @@
     "gsap",
     "vitepress",
     "web",
-    "frontend"
+    "frontend",
+    "physics",
+    "realistic",
+    "raindrops",
+    "interactive"
   ],
-  "author": "你的名字 <你的邮箱@example.com>",
+  "author": "handsomezhuzhu 2658601135@qq.com",
   "license": "MIT",
   "peerDependencies": {
     "gsap": "^3.12.0"
@@ -40,10 +45,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/你的github用户名/cursor-rain-effect.git"
+    "url": "https://github.com/handsomezhuzhu/cursor-rain.git"
   },
   "bugs": {
-    "url": "https://github.com/你的github用户名/cursor-rain-effect/issues"
+    "url": "https://github.com/handsomezhuzhu/cursor-rain/issues"
   },
-  "homepage": "https://github.com/你的github用户名/cursor-rain-effect#readme"
+  "homepage": "https://github.com/handsomezhuzhu/cursor-rain#readme"
 }
