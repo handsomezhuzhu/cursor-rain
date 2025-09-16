@@ -96,6 +96,14 @@
             <button onclick="toggleRain()">暂停/恢复 雨点</button>
             <button onclick="changeColor()">更换颜色</button>
             <button onclick="changeIntensity()">调整强度</button>
+            <button onclick="changeVelocity()">调整初速度</button>
+        </div>
+        
+        <div class="demo-area">
+            <h3>🚀 新功能：可调节初速度</h3>
+            <p><strong>初速度范围：</strong><span id="velocityDisplay">[100, 300] px/s</span></p>
+            <p><strong>重力加速度：</strong><span id="gravityDisplay">500 px/s²</span></p>
+            <p>点击"调整初速度"按钮来体验不同的雨滴下落效果！</p>
         </div>
     </div>
 
@@ -112,6 +120,8 @@
                     dropSize: options.dropSize || [3, 8],
                     color: options.color || 'rgba(173, 216, 230, 0.8)',
                     duration: options.duration || [0.8, 1.5],
+                    initialVelocity: options.initialVelocity || [100, 300],
+                    gravity: options.gravity || 500,
                     enabled: true,
                     ...options
                 };
@@ -182,11 +192,19 @@
                 const offsetX = this.randomBetween(-20, 20);
                 const offsetY = this.randomBetween(-10, 10);
                 
+                // 计算物理参数
+                const fallDistance = window.innerHeight - y + 100;
+                const initialVelocity = this.randomBetween(this.options.initialVelocity[0], this.options.initialVelocity[1]);
+                const gravity = this.options.gravity;
+                
+                // 简化物理计算，确保演示正常工作
+                const fallTime = Math.max(0.5, fallDistance / Math.max(initialVelocity, 100));
+                
                 gsap.set(availableDrop, {
                     x: x + offsetX - size / 2,
                     y: y + offsetY - size / 2,
-                    width: size,
-                    height: size * 1.5,
+                    width: size * 0.3,
+                    height: size * 4,
                     opacity: 0,
                     scaleY: 0.1,
                     rotation: this.randomBetween(-15, 15)
@@ -200,11 +218,13 @@
                     ease: 'power2.out'
                 })
                 .to(availableDrop, {
-                    y: `+=${window.innerHeight - y + 100}`,
+                    y: `+=${fallDistance}`,
+                    x: `+=${this.randomBetween(-10, 10)}`,
                     scaleY: 1.5,
                     opacity: 0.3,
-                    duration: duration,
-                    ease: 'power1.in'
+                    rotation: 0,
+                    duration: Math.min(fallTime, duration * 2), // 使用计算的下落时间
+                    ease: 'power2.in'
                 }, 0.05)
                 .to(availableDrop, {
                     opacity: 0,
@@ -275,6 +295,14 @@
             { maxDrops: 50, dropSize: [4, 10] }
         ];
         
+        let velocityLevel = 0;
+        const velocitySettings = [
+            { initialVelocity: [100, 300], gravity: 500, name: "正常速度" },
+            { initialVelocity: [50, 150], gravity: 300, name: "缓慢飘落" },
+            { initialVelocity: [200, 500], gravity: 800, name: "急速下坠" },
+            { initialVelocity: [0, 50], gravity: 200, name: "轻柔飘散" }
+        ];
+        
         function toggleRain() {
             isEnabled = !isEnabled;
             if (isEnabled) {
@@ -293,6 +321,21 @@
             intensityLevel = (intensityLevel + 1) % intensities.length;
             const newIntensity = intensities[intensityLevel];
             rainEffect.updateOptions(newIntensity);
+        }
+        
+        function changeVelocity() {
+            velocityLevel = (velocityLevel + 1) % velocitySettings.length;
+            const newVelocity = velocitySettings[velocityLevel];
+            rainEffect.updateOptions({
+                initialVelocity: newVelocity.initialVelocity,
+                gravity: newVelocity.gravity
+            });
+            
+            // 更新显示
+            document.getElementById('velocityDisplay').textContent = 
+                `[${newVelocity.initialVelocity[0]}, ${newVelocity.initialVelocity[1]}] px/s (${newVelocity.name})`;
+            document.getElementById('gravityDisplay').textContent = 
+                `${newVelocity.gravity} px/s²`;
         }
     </script>
 </body>

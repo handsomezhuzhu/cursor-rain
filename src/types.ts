@@ -46,6 +46,20 @@ export interface RainDropOptions {
    * @default document.body
    */
   container?: HTMLElement;
+  
+  /**
+   * Initial velocity range for raindrops [min, max] in pixels per second
+   * Controls how fast raindrops start falling
+   * @default [100, 300]
+   */
+  initialVelocity?: [number, number];
+  
+  /**
+   * Gravity acceleration in pixels per second squared
+   * Controls how much the raindrops accelerate as they fall
+   * @default 500
+   */
+  gravity?: number;
 }
 
 export interface RainDrop {

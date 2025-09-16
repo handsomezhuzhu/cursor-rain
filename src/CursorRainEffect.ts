@@ -20,7 +20,9 @@ export class CursorRainEffect implements ICursorRainEffect {
       delay: options.delay ?? 100,
       enabled: options.enabled ?? true,
       zIndex: options.zIndex ?? 9999,
-      container: options.container ?? document.body
+      container: options.container ?? document.body,
+      initialVelocity: options.initialVelocity ?? [100, 300],
+      gravity: options.gravity ?? 500
     };
     
     this.container = this.options.container;
@@ -181,9 +183,19 @@ export class CursorRainEffect implements ICursorRainEffect {
       rotation: this.randomBetween(-15, 15)
     });
 
-    // Animate the raindrop - continuous fall with gradual rotation change
+    // 计算物理参数
     const initialRotation = this.randomBetween(-15, 15); // 初始随机角度
     const fallDistance = window.innerHeight - finalY + 100;
+    const initialVelocity = this.randomBetween(this.options.initialVelocity[0], this.options.initialVelocity[1]);
+    const gravity = this.options.gravity;
+    
+    // 根据物理公式计算运动时间：s = v0*t + 0.5*g*t²
+    // 解二次方程：0.5*g*t² + v0*t - s = 0
+    const a = 0.5 * gravity;
+    const b = initialVelocity;
+    const c = -fallDistance;
+    const discriminant = b * b - 4 * a * c;
+    const fallTime = discriminant >= 0 ? (-b + Math.sqrt(discriminant)) / (2 * a) : duration;
     
     const tl = gsap.timeline({
       onComplete: () => {
@@ -198,15 +210,15 @@ export class CursorRainEffect implements ICursorRainEffect {
       duration: 0.1,
       ease: 'power2.out'
     })
-    // 连续下落：一次性完成整个下落过程，同时角度逐渐变垂直
+    // 物理下落：使用真实的初速度和重力加速度
     .to(dropElement, {
-      y: `+=${fallDistance}`, // 一次性完成所有下落距离
+      y: `+=${fallDistance}`, // 下落距离
       x: `+=${initialRotation * 0.3}`, // 轻微的水平漂移
       scaleY: 1.5, // 逐渐拉长
       opacity: 0.3, // 逐渐变透明
       rotation: 0, // 角度从初始角度平滑变为垂直
-      duration: duration,
-      ease: 'power1.in' // 重力加速效果
+      duration: Math.min(fallTime, duration * 2), // 使用物理计算的时间，但限制最大值
+      ease: 'power2.in' // 加速下落效果，模拟重力
     }, 0.05);
   }
 
