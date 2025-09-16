@@ -113,7 +113,9 @@ rainEffect.enable();
 // 更新配置
 rainEffect.updateOptions({
   color: 'rgba(255, 182, 193, 0.8)',
-  maxDrops: 30
+  maxDrops: 30,
+  initialVelocity: [150, 400],  // 🆕 调整初速度
+  gravity: 600                  // 🆕 调整重力
 });
 
 // 销毁效果
@@ -132,6 +134,8 @@ rainEffect.destroy();
 | `enabled` | `boolean` | `true` | 是否启用效果 | - |
 | `zIndex` | `number` | `9999` | 雨滴容器的 z-index | `1000-10000` |
 | `container` | `HTMLElement` | `document.body` | 效果容器元素 | - |
+| `initialVelocity` | `[number, number]` | `[100, 300]` | 初速度范围（像素/秒） | `[0, 800]` |
+| `gravity` | `number` | `500` | 重力加速度（像素/秒²） | `100-1500` |
 
 ### 🎨 预设主题
 
@@ -160,6 +164,24 @@ initCursorRainForVitePress({
   color: 'rgba(255, 215, 0, 0.6)',
   dropSize: [2, 6],
   delay: 120
+});
+
+// 🆕 物理效果预设
+// 轻柔飘散
+initCursorRainForVitePress({
+  color: 'rgba(255, 255, 255, 0.8)',
+  initialVelocity: [0, 50],
+  gravity: 200,
+  duration: [3.0, 5.0]
+});
+
+// 急速暴雨
+initCursorRainForVitePress({
+  color: 'rgba(100, 149, 237, 0.8)',
+  initialVelocity: [300, 600],
+  gravity: 800,
+  duration: [0.3, 0.8],
+  maxDrops: 50
 });
 ```
 

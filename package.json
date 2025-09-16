@@ -1,6 +1,6 @@
 {
   "name": "cursor-rain-effect",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A beautiful rain effect that follows cursor movement with realistic physics. Features slim raindrops that gradually rotate from random angles to vertical during fall, optimized with GSAP and compatible with VitePress.",
   "type": "module",
   "main": "dist/index.js",
